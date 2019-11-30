@@ -1,0 +1,93 @@
+language: cpp
+sudo: false
+
+matrix:
+  include:
+    - os: linux
+      dist: bionic
+      group: travis_latest
+      env: MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
+      addons: { apt: { packages: ["ninja-build", "clang-8"], sources: ["llvm-toolchain-bionic-8", "ubuntu-toolchain-r-test"] } }
+
+    - os: linux
+      dist: bionic
+      group: travis_latest
+      env: MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+      addons: { apt: { packages: ["ninja-build", "g++-9"], sources: ["ubuntu-toolchain-r-test"] } }
+
+install:
+  - eval "${MATRIX_EVAL}"
+  - ${CXX} --version
+
+  - ninja --version
+
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+
+  - travis_retry wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.16.0/cmake-3.16.0-Linux-x86_64.tar.gz
+  - echo "fdbd696299c11a8e0947662276e51218 *cmake-3.16.0-Linux-x86_64.tar.gz" > cmake_md5.txt
+  - md5sum -c cmake_md5.txt
+  - tar -xvf cmake-3.16.0-Linux-x86_64.tar.gz > /dev/null
+  - mv cmake-3.16.0-Linux-x86_64 cmake-install
+  - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
+  - cd ${TRAVIS_BUILD_DIR}
+  - which cmake
+  - cmake --version
+
+  - |
+    if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+      if [[ "${CXX%%+*}" == "clang" ]]; then
+        if [[ "${CXX}" == "clang++-8" ]]; then LLVM_VERSION="8.0.0";
+        fi
+        LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
+        LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
+        LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
+        mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
+        travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm
+        travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx
+        travis_retry wget -O - ${LIBCXXABI_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxxabi
+        (cd llvm/build && cmake .. -DCMAKE_INSTALL_PREFIX=${DEPS_DIR}/llvm/install)
+        (cd llvm/build/projects/libcxx && make install -j2)
+        (cd llvm/build/projects/libcxxabi && make install -j2)
+        export CXXFLAGS="-isystem ${DEPS_DIR}/llvm/install/include/c++/v1"
+        export LDFLAGS="-L ${DEPS_DIR}/llvm/install/lib -l c++ -l c++abi"
+        export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DEPS_DIR}/llvm/install/lib"
+      fi
+    fi
+
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - cd build
+  - cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DGENERATE_COVERAGE_INFO=ON -DGCOV_COMMAND=/usr/bin/gcov-9 ..
+  - cmake --build .
+
+script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - cd build
+  - ctest -C Debug
+
+after_success:
+  - cd ${TRAVIS_BUILD_DIR}/build
+  - |
+    if [[ "${CXX}" == "g++-9" ]]; then
+        cmake --build . --target coverage
+        bash <(curl -s https://codecov.io/bash) -x /usr/bin/gcov-9 2> /dev/null
+    fi
+  - |
+    for i in `seq 1 25`;
+    do
+      if (( $i < 10 )); then
+        if [ -d 0$i ]; then
+            echo Result for day 0$i:
+            cd 0$i
+            ./advent0$i
+        fi
+      else
+        if [ -d $i ]; then
+            echo Result for day $i:
+            cd $i
+            ./advent$i
+        fi
+      fi
+      cd ..
+    done

@@ -1,0 +1,17 @@
+@echo off
+FOR /L %%I IN (1,1,9) DO (
+    IF EXIST 0%%I (
+        cd 0%%I
+        echo Result for day %%I:
+        Release\advent0%%I.exe
+        cd ..
+    )
+)
+FOR /L %%I IN (10,1,25) DO (
+    IF EXIST %%I (
+       cd %%I
+       echo Result for day %%I:
+       Release\advent%%I.exe
+       cd ..
+    )
+)
