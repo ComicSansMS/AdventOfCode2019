@@ -64,7 +64,7 @@ std::vector<int> parseInput(std::string_view input)
 {
     return ranges::to<std::vector<int>>(input | ranges::views::split('\n') |
         ranges::views::transform([](auto sv) {
-            return std::stoi(std::string{ sv });
+            return std::stoi(ranges::to<std::string>(sv));
         }));
 }
 
