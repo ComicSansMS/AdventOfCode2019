@@ -1,4 +1,4 @@
-#include <test.hpp>
+#include <rocket_equation.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -36,8 +36,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::cout << "First result is " << test1(*input) << std::endl;
-    std::cout << "Second result is " << test2(*input) << std::endl;
+    auto const masses = parseInput(*input);
+
+    std::cout << "First result is " << total_fuel(masses) << std::endl;
+    std::cout << "Second result is " << total_fuel_with_fuel(masses) << std::endl;
 
     return 0;
 }
