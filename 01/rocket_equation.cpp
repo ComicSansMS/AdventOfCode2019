@@ -62,8 +62,7 @@ mass of the added fuel? (Calculate the fuel requirements for each module separat
 
 std::vector<int> parseInput(std::string_view input)
 {
-    return ranges::to<std::vector<int>>(input |
-        ranges::views::split('\n') |
+    return ranges::to<std::vector<int>>(input | ranges::views::split('\n') |
         ranges::views::transform([](auto sv) {
             return std::stoi(std::string{ sv });
         }));
