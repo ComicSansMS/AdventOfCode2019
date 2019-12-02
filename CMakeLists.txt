@@ -69,3 +69,4 @@ endif()
 enable_testing()
 
 add_subdirectory(01)
+add_subdirectory(02)
