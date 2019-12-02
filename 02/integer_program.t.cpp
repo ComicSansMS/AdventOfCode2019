@@ -75,4 +75,21 @@ TEST_CASE("Integer Program")
         CHECK(p.memory == std::vector<int>{30, 1, 1, 4, 2, 5, 6, 0, 99});
         CHECK(p.pc == -1);
     }
+
+    SECTION("Execute with parameters")
+    {
+        auto p = parseInput("1,0,0,0,99");
+        CHECK(executeWithParameters(p, 4, 1) == 103);
+        CHECK(executeWithParameters(p, 3, 1) == 3);
+        CHECK(executeWithParameters(p, 0, 1) == 1);
+        CHECK(executeWithParameters(p, 1, 1) == 2);
+        CHECK(executeWithParameters(p, 1, 2) == 3);
+    }
+
+    SECTION("Search for output")
+    {
+        auto const [noun, verb] = searchForOutput(parseInput("1,1,1,4,99,5,6,0,99"), 1);
+        CHECK(noun == 0);
+        CHECK(verb == 2);
+    }
 }

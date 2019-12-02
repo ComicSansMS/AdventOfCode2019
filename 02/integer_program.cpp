@@ -111,10 +111,14 @@ example, if noun=12 and verb=2, the answer would be 1202.)
 
 #include <integer_program.hpp>
 
+#include <range/v3/view/cartesian_product.hpp>
+#include <range/v3/view/drop_while.hpp>
+#include <range/v3/view/iota.hpp>
 #include <range/v3/view/split.hpp>
 #include <range/v3/view/take_while.hpp>
 #include <range/v3/view/transform.hpp>
 #include <range/v3/range/conversion.hpp>
+#include <range/v3/range/operations.hpp>
 
 #include <cassert>
 #include <string>
@@ -133,7 +137,7 @@ void executeOpcode(IntegerProgram& p)
 {
     auto checkParameters = [&p]()
     {
-        auto range_check = [&p](int i) { return (i >= 0) && (i < p.memory.size()); };
+        auto range_check = [&p](int i) { return (i >= 0) && (i < static_cast<int>(p.memory.size())); };
         return range_check(p.pc + 1) && range_check(p.pc + 2) && range_check(p.pc + 3) &&
                range_check(p.memory[p.pc + 1]) && range_check(p.memory[p.pc + 2]) && range_check(p.memory[p.pc + 3]);
     };
@@ -162,4 +166,26 @@ void executeProgram(IntegerProgram& p)
     while (p.pc >= 0) {
         executeOpcode(p);
     }
+}
+
+int executeWithParameters(IntegerProgram const& p, int noun, int verb)
+{
+    auto p1 = p;
+    p1.memory[1] = noun;
+    p1.memory[2] = verb;
+    executeProgram(p1);
+    return p1.memory[0];
+}
+
+SearchResult searchForOutput(IntegerProgram const& p, int desired_result)
+{
+    auto ri = ranges::views::iota(0, 100);
+    auto [_, noun, verb] = ranges::front(
+        ranges::views::cartesian_product(ri, ri) |
+        ranges::views::transform([&p](auto tp) {
+            auto const [noun, verb] = tp;
+            return std::make_tuple(executeWithParameters(p, noun, verb), noun, verb);
+            }) |
+        ranges::views::drop_while([desired_result](auto t) { return std::get<0>(t) != desired_result; }));
+    return SearchResult{ noun, verb };
 }

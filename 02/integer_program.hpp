@@ -21,4 +21,13 @@ void executeOpcode(IntegerProgram& p);
 
 void executeProgram(IntegerProgram& p);
 
+int executeWithParameters(IntegerProgram const& p, int noun, int verb);
+
+struct SearchResult {
+    int noun;
+    int verb;
+};
+
+SearchResult searchForOutput(IntegerProgram const& p, int desired_result);
+
 #endif
