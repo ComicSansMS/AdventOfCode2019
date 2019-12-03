@@ -20,28 +20,21 @@ struct PathSegment {
     int length;
 };
 
-inline bool operator==(PathSegment const& lhs, PathSegment const& rhs)
-{
-    return (lhs.direction == rhs.direction) && (lhs.length == rhs.length);
-}
+bool operator==(PathSegment const& lhs, PathSegment const& rhs);
 
 struct Coordinates {
     int x;
     int y;
 };
 
-inline bool operator==(Coordinates const& lhs, Coordinates const& rhs) {
-    return (lhs.x == rhs.x) && (lhs.y == rhs.y);
-}
+bool operator==(Coordinates const& lhs, Coordinates const& rhs);
 
 struct Line {
     Coordinates start;
     Coordinates end;
 };
 
-inline bool operator==(Line const& lhs, Line const& rhs) {
-    return (lhs.start == rhs.start) && (lhs.end == rhs.end);
-}
+bool operator==(Line const& lhs, Line const& rhs);
 
 bool isVertical(Line const& l);
 int length(Line const& l);

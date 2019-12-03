@@ -19,6 +19,19 @@
 #include <ostream>
 #include <string>
 
+bool operator==(PathSegment const& lhs, PathSegment const& rhs)
+{
+    return (lhs.direction == rhs.direction) && (lhs.length == rhs.length);
+}
+
+bool operator==(Coordinates const& lhs, Coordinates const& rhs) {
+    return (lhs.x == rhs.x) && (lhs.y == rhs.y);
+}
+
+bool operator==(Line const& lhs, Line const& rhs) {
+    return (lhs.start == rhs.start) && (lhs.end == rhs.end);
+}
+
 Field parseInput(std::string_view input)
 {
     Field f;
