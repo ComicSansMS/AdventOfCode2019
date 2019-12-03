@@ -24,6 +24,23 @@ TEST_CASE("Wires Crossing")
         CHECK_FALSE(PathSegment{ Direction::Up, 1 } == PathSegment{ Direction::Left, 3 });
     }
 
+    SECTION("Coordinate Equality")
+    {
+        CHECK(Coordinates{ 1, 2 } == Coordinates{ 1, 2 });
+        CHECK_FALSE(Coordinates{ 1, 2 } == Coordinates{ 1, 3 });
+        CHECK_FALSE(Coordinates{ 1, 2 } == Coordinates{ 2, 2 });
+        CHECK_FALSE(Coordinates{ 1, 2 } == Coordinates{ 2, 3 });
+        CHECK(Coordinates{ 2, 3 } == Coordinates{ 2, 3 });
+    }
+
+    SECTION("Line Equality")
+    {
+        CHECK(Line{ { 1, 2 }, { 3, 4 } } == Line{ { 1, 2 }, { 3, 4 } });
+        CHECK_FALSE(Line{ { 1, 2 }, { 3, 4 } } == Line{ { 1, 3 }, { 3, 4 } });
+        CHECK_FALSE(Line{ { 1, 2 }, { 3, 4 } } == Line{ { 1, 2 }, { 4, 4 } });
+        CHECK_FALSE(Line{ { 1, 2 }, { 3, 4 } } == Line{ { 5, 7 }, { 4, 9 } });
+    }
+
     SECTION("Parse Input")
     {
         Field const field = parseInput(sample_input);

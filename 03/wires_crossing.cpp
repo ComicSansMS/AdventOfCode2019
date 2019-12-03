@@ -34,7 +34,6 @@ Field parseInput(std::string_view input)
             case 'D': l.direction = Direction::Down; break;
             case 'L': l.direction = Direction::Left; break;
             case 'R': l.direction = Direction::Right; break;
-            default: assert(false); break;
             }
             l.length = std::stoi(tt.substr(1));
         }
