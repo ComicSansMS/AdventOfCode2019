@@ -47,6 +47,8 @@ bool isVertical(Line const& l);
 int length(Line const& l);
 std::optional<Coordinates> intersect(Line const& l1, Line const& l2);
 
+bool intersect(Line const& l, Coordinates const& p);
+
 struct Wire {
     std::vector<PathSegment> path;
     std::vector<Line> lines;
@@ -63,5 +65,7 @@ Field parseInput(std::string_view input);
 void layoutWires(Field& f);
 
 std::tuple<Coordinates, int> closestIntersection(Wire const& w1, Wire const& w2);
+
+std::array<int, 2> walkIntersectionPoints(Field const& f);
 
 #endif

@@ -65,6 +65,7 @@ void layoutWires(Field& f)
 
 bool isVertical(Line const& l)
 {
+    assert(!(l.start == l.end));
     return l.start.x == l.end.x;
 }
 
@@ -91,25 +92,66 @@ std::optional<Coordinates> intersect(Line const& l1, Line const& l2)
     return std::nullopt;
 }
 
+bool intersect(Line const& l, Coordinates const& p)
+{
+    auto const [minx, maxx] = std::minmax(l.start.x, l.end.x);
+    auto const [miny, maxy] = std::minmax(l.start.y, l.end.y);
+    return (p.x >= minx) && (p.x <= maxx) && (p.y >= miny) && (p.y <= maxy);
+}
+
+auto intersectionPoints(std::vector<Line> const& lines1, std::vector<Line> const& lines2)
+{
+    return ranges::to<std::vector<Coordinates>>(
+        ranges::views::cartesian_product(lines1, lines2) |
+        ranges::views::transform([](auto t) {
+            auto const& [l1, l2] = t;
+            return intersect(l1, l2);
+            }) |
+        ranges::views::drop(1) |
+        ranges::views::filter([](auto opt) { return opt.has_value(); }) |
+        ranges::views::transform([](auto opt) { return *opt; }));
+}
+
 std::tuple<Coordinates, int> closestIntersection(Wire const& w1, Wire const& w2)
 {
     auto const manhattanDistance = [](Coordinates const& c) {
         return std::abs(c.x) + std::abs(c.y);
     };
 
-    auto intersection_points =
-        ranges::views::cartesian_product(w1.lines, w2.lines) |
-        ranges::views::transform([](auto t) {
-            auto const& [l1, l2] = t;
-            return intersect(l1, l2);
-            }) |
-        ranges::views::drop(1) |
-        ranges::views::filter([](auto opt) { return opt.has_value(); });
-    auto v = ranges::to<std::vector<std::optional<Coordinates>>>(intersection_points);
-    Coordinates const ret = **ranges::min_element(intersection_points,
-        [manhattanDistance](std::optional<Coordinates> const& c1, std::optional<Coordinates> const& c2) {
-            return manhattanDistance(*c1) < manhattanDistance(*c2);
+    auto const intersection_points = intersectionPoints(w1.lines, w2.lines);
+    Coordinates const ret = *ranges::min_element(intersection_points,
+        [manhattanDistance](Coordinates const& c1, Coordinates const& c2) {
+            return manhattanDistance(c1) < manhattanDistance(c2);
         });
     return std::make_tuple(ret, manhattanDistance(ret));
+}
+
+std::array<int, 2> walkIntersectionPoints(Field const& f)
+{
+    std::array<int, 2> ret{ std::numeric_limits<int>::max(), 0};
+    auto const intersection_points = intersectionPoints(f.wires[0].lines, f.wires[1].lines);
+
+    for (auto const& p : intersection_points) {
+        int acc[] = { 0, 0 };
+        for (int i = 0; i < 2; ++i) {
+            auto const& w = f.wires[i];
+            for (auto const& l : w.lines) {
+                if (intersect(l, p)) {
+                    if (isVertical(l)) {
+                        acc[i] += std::abs(l.start.y - p.y);
+                    } else {
+                        acc[i] += std::abs(l.start.x - p.x);
+                    }
+                    break;
+                }
+                acc[i] += length(l);
+            }
+        }
+        if (acc[0] + acc[1] < ret[0] + ret[1]) {
+            ret[0] = acc[0];
+            ret[1] = acc[1];
+        }
+    }
+    return ret;
 }
 

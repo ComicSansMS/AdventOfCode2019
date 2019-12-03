@@ -10,6 +10,10 @@ TEST_CASE("Wires Crossing")
 {
     char const sample_input[] = "R8,U5,L5,D3\nU7,R6,D4,L4";
 
+    char const sample_input2[] = "R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83";
+
+    char const sample_input3[] = "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7";
+
     SECTION("Path Segment Equality")
     {
         CHECK(PathSegment{ Direction::Up, 1 } == PathSegment{ Direction::Up, 1 });
@@ -75,6 +79,19 @@ TEST_CASE("Wires Crossing")
         CHECK(*intersect(Line{ {6, 3}, {2, 3} }, Line{ {3, 5}, {3, 2} }) == Coordinates{3, 3});
     }
 
+    SECTION("Line Point Intersection")
+    {
+        CHECK(intersect(Line{ {6, 7}, {6, 3} }, Coordinates{6, 5}));
+        CHECK(intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 6, 7 }));
+        CHECK(intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 6, 3 }));
+        CHECK(intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 6, 4 }));
+        CHECK(intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 6, 6 }));
+        CHECK(!intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 7, 3 }));
+        CHECK(!intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 8, 3 }));
+        CHECK(!intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 6, 2 }));
+        CHECK(!intersect(Line{ {6, 7}, {6, 3} }, Coordinates{ 6, 8 }));
+    }
+
     SECTION("Closest Intersection")
     {
         Field field = parseInput(sample_input);
@@ -83,16 +100,37 @@ TEST_CASE("Wires Crossing")
         CHECK(coords == Coordinates{ 3, 3 });
         CHECK(dist == 6);
 
-        Field field2 = parseInput("R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83");
+        Field field2 = parseInput(sample_input2);
         layoutWires(field2);
         auto [coords2, dist2] = closestIntersection(field2.wires[0], field2.wires[1]);
         CHECK(coords2 == Coordinates{ 155, 4 });
         CHECK(dist2 == 159);
 
-        Field field3 = parseInput("R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7");
+        Field field3 = parseInput(sample_input3);
         layoutWires(field3);
         auto [coords3, dist3] = closestIntersection(field3.wires[0], field3.wires[1]);
         CHECK(coords3 == Coordinates{ 124, 11 });
         CHECK(dist3 == 135);
+    }
+
+    SECTION("Walk Intersection Points")
+    {
+        Field field = parseInput(sample_input);
+        layoutWires(field);
+        auto const steps = walkIntersectionPoints(field);
+        CHECK(steps == std::array<int, 2>{15, 15});
+        CHECK(steps[0] + steps[1] == 30);
+
+        Field field2 = parseInput(sample_input2);
+        layoutWires(field2);
+        auto const steps2 = walkIntersectionPoints(field2);
+        CHECK(steps2 == std::array<int, 2>{206, 404});
+        CHECK(steps2[0] + steps2[1] == 610);
+
+        Field field3 = parseInput(sample_input3);
+        layoutWires(field3);
+        auto const steps3 = walkIntersectionPoints(field3);
+        CHECK(steps3 == std::array<int, 2>{154, 256});
+        CHECK(steps3[0] + steps3[1] == 410);
     }
 }

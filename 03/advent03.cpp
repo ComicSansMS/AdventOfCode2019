@@ -41,7 +41,9 @@ int main(int argc, char* argv[])
     auto [coords, dist] = closestIntersection(f.wires[0], f.wires[1]);
 
     std::cout << "First result is " << dist << std::endl;
-    //std::cout << "Second result is " << 0 << std::endl;
+
+    auto const [steps_w1, steps_w2] = walkIntersectionPoints(f);
+    std::cout << "Second result is " << steps_w1 + steps_w2 << std::endl;
 
     return 0;
 }
