@@ -17,7 +17,7 @@ IntegerProgram parseInput(std::string_view input)
     return IntegerProgram{ ranges::to<std::vector<int>>(input | ranges::views::split(',') |
         ranges::views::transform([](auto sv) {
             return std::stoi(ranges::to<std::string>(sv));
-        })), 0 };
+        })), 0, {}, {} };
 }
 
 std::tuple<Opcode, Mode, Mode, Mode> decode(int instruction)
