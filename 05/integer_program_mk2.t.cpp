@@ -175,4 +175,279 @@ TEST_CASE("Integer Program")
         executeProgram(p2);
         CHECK(p2.memory[0] == 65);
     }
+
+    SECTION("Opcode Jump If True")
+    {
+        {
+            auto p = parseInput("5,9,7,104,42,99,0,10,0,1,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 23 });
+        }
+        {
+            auto p = parseInput("5,9,7,104,42,99,0,10,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 42 });
+        }
+        {
+            auto p = parseInput("1005,9,10,104,42,99,0,0,0,1,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 23 });
+        }
+        {
+            auto p = parseInput("1005,9,10,104,42,99,0,0,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 42 });
+        }
+        {
+            auto p = parseInput("1105,1,10,104,42,99,0,0,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 23 });
+        }
+        {
+            auto p = parseInput("1105,0,10,104,42,99,0,0,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 42 });
+        }
+    }
+
+    SECTION("Opcode Jump If False")
+    {
+        {
+            auto p = parseInput("6,9,7,104,42,99,0,10,0,1,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 42 });
+        }
+        {
+            auto p = parseInput("6,9,7,104,42,99,0,10,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 23 });
+        }
+        {
+            auto p = parseInput("1006,9,10,104,42,99,0,0,0,1,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 42 });
+        }
+        {
+            auto p = parseInput("1006,9,10,104,42,99,0,0,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 23 });
+        }
+        {
+            auto p = parseInput("1106,1,10,104,42,99,0,0,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 42 });
+        }
+        {
+            auto p = parseInput("1106,0,10,104,42,99,0,0,0,0,104,23,99");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.output == std::vector<int>{ 23 });
+        }
+    }
+
+    SECTION("Opcode Less Than")
+    {
+        {
+            auto p = parseInput("7,5,6,0,99,100,1");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 0);
+        }
+        {
+            auto p = parseInput("7,5,6,0,99,100,101");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 1);
+        }
+        {
+            auto p = parseInput("1107,5,6,0,99,100,1");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 1);
+        }
+        {
+            auto p = parseInput("1007,5,6,0,99,100,1");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 0);
+        }
+    }
+
+    SECTION("Opcode Equals")
+    {
+        {
+            auto p = parseInput("8,5,6,0,99,2,1");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 0);
+        }
+        {
+            auto p = parseInput("8,5,6,0,99,2,2");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 1);
+        }
+        {
+            auto p = parseInput("1108,5,6,0,99,5,5");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 0);
+        }
+        {
+            auto p = parseInput("108,5,6,0,99,15,5");
+            executeProgram(p);
+            CHECK(p.pc == -1);
+            CHECK(p.memory[0] == 1);
+        }
+    }
+
+    SECTION("Sample Programs Equal")
+    {
+        std::string const programs_equal[] = {
+            "3,9,8,9,10,9,4,9,99,-1,8",
+            "3,3,1108,-1,8,3,4,3,99"
+        };
+        for (auto const& str : programs_equal) {
+            {
+                auto p = parseInput(str);
+                p.input.push_back(7);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 0 });
+            }
+            {
+                auto p = parseInput(str);
+                p.input.push_back(8);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 1 });
+            }
+            {
+                auto p = parseInput(str);
+                p.input.push_back(9);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 0 });
+            }
+        }
+    }
+
+    SECTION("Sample Programs Less Than")
+    {
+        std::string const programs_less_than[] = {
+            "3,9,7,9,10,9,4,9,99,-1,8",
+            "3,3,1107,-1,8,3,4,3,99"
+        };
+        for (auto const& str : programs_less_than) {
+            {
+                auto p = parseInput(str);
+                p.input.push_back(7);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 1 });
+            }
+            {
+                auto p = parseInput(str);
+                p.input.push_back(8);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 0 });
+            }
+            {
+                auto p = parseInput(str);
+                p.input.push_back(9);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 0 });
+            }
+        }
+    }
+
+    SECTION("Sample Programs Jump Tests")
+    {
+        std::string const programs_jump[] = {
+            "3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9",
+            "3,3,1105,-1,9,1101,0,0,12,4,12,99,1"
+        };
+        for (auto const& str : programs_jump) {
+            {
+                auto p = parseInput(str);
+                p.input.push_back(7);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 1 });
+            }
+            {
+                auto p = parseInput(str);
+                p.input.push_back(0);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 0 });
+            }
+            {
+                auto p = parseInput(str);
+                p.input.push_back(-1);
+                executeProgram(p);
+                CHECK(p.pc == -1);
+                CHECK(p.input.empty());
+                CHECK(p.output == std::vector<int>{ 1 });
+            }
+        }
+    }
+
+    SECTION("Larger Example")
+    {
+        char const sample_input[] = "3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,"
+                                    "1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,"
+                                    "999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99";
+        {
+            auto p = parseInput(sample_input);
+            p.input.push_back(6);
+            executeProgram(p);
+            CHECK(p.output == std::vector<int>{ 999 });
+        }
+        {
+            auto p = parseInput(sample_input);
+            p.input.push_back(7);
+            executeProgram(p);
+            CHECK(p.output == std::vector<int>{ 999 });
+        }
+        {
+            auto p = parseInput(sample_input);
+            p.input.push_back(8);
+            executeProgram(p);
+            CHECK(p.output == std::vector<int>{ 1000 });
+        }
+        {
+            auto p = parseInput(sample_input);
+            p.input.push_back(9);
+            executeProgram(p);
+            CHECK(p.output == std::vector<int>{ 1001 });
+        }
+        {
+            auto p = parseInput(sample_input);
+            p.input.push_back(10);
+            executeProgram(p);
+            CHECK(p.output == std::vector<int>{ 1001 });
+        }
+    }
 }

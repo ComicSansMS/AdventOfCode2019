@@ -30,12 +30,16 @@ std::tuple<Opcode, Mode, Mode, Mode> decode(int instruction)
         case Opcode::Multiply: return 3;
         case Opcode::Input: return 1;
         case Opcode::Output: return 1;
+        case Opcode::JumpIfTrue: return 2;
+        case Opcode::JumpIfFalse: return 2;
+        case Opcode::LessThan: return 3;
+        case Opcode::Equals: return 3;
         case Opcode::Halt: return 0;
         default: return -1;
         }
     }();
     auto const mode_1 = (arity >= 1) ? static_cast<Mode>((instruction / 100) % 10) : Mode::NoArgument;
-    auto const mode_2 = (arity >= 3) ? static_cast<Mode>((instruction / 1000) % 10) : Mode::NoArgument;
+    auto const mode_2 = (arity >= 2) ? static_cast<Mode>((instruction / 1000) % 10) : Mode::NoArgument;
     auto const mode_3 = (arity >= 3) ? static_cast<Mode>((instruction / 10000) % 10) : Mode::NoArgument;
     return std::make_tuple(opcode, mode_1, mode_2, mode_3);
 }
@@ -51,6 +55,11 @@ void executeOpcode(IntegerProgram& p)
             p.memory.resize(p.memory[p.pc + 1] + 1);
         }
         return true;
+    };
+    auto checkParameters2 = [&p, range_check](Mode mode_1, Mode mode_2) -> bool {
+        return range_check(p.pc + 1) && range_check(p.pc + 2) &&
+            (mode_1 != Mode::Position || range_check(p.memory[p.pc + 1])) &&
+            (mode_2 != Mode::Position || range_check(p.memory[p.pc + 2]));
     };
     auto checkParameters3 = [&p, range_check](Mode mode_1, Mode mode_2, Mode mode_3) -> bool {
         return range_check(p.pc + 1) && range_check(p.pc + 2) && range_check(p.pc + 3) &&
@@ -84,6 +93,32 @@ void executeOpcode(IntegerProgram& p)
         if (!checkParameters1(mode_1)) { p.pc = -3; break; }
         p.output.push_back(fetch_arg(1, mode_1));
         p.pc += 2;
+        break;
+    case Opcode::JumpIfTrue:
+        if (!checkParameters2(mode_1, mode_2)) { p.pc = -3; break; }
+        if (fetch_arg(1, mode_1) != 0) {
+            p.pc = fetch_arg(2, mode_2);
+        } else {
+            p.pc += 3;
+        }
+        break;
+    case Opcode::JumpIfFalse:
+        if (!checkParameters2(mode_1, mode_2)) { p.pc = -3; break; }
+        if (fetch_arg(1, mode_1) == 0) {
+            p.pc = fetch_arg(2, mode_2);
+        } else {
+            p.pc += 3;
+        }
+        break;
+    case Opcode::LessThan:
+        if (!checkParameters3(mode_1, mode_2, mode_3)) { p.pc = -3; break; }
+        fetch_arg(3, mode_3) = (fetch_arg(1, mode_1) < fetch_arg(2, mode_2)) ? 1 : 0;
+        p.pc += 4;
+        break;
+    case Opcode::Equals:
+        if (!checkParameters3(mode_1, mode_2, mode_3)) { p.pc = -3; break; }
+        fetch_arg(3, mode_3) = (fetch_arg(1, mode_1) == fetch_arg(2, mode_2)) ? 1 : 0;
+        p.pc += 4;
         break;
     case Opcode::Halt:
         p.pc = -1;

@@ -42,10 +42,12 @@ int main(int argc, char* argv[])
     executeProgram(p1);
 
     std::cout << "First result is " << p1.output.back() << std::endl;
-    //
-    //auto const [noun, verb] = searchForOutput(p, 19690720);
-    //
-    //std::cout << "Second result is " << (100 * noun + verb) << std::endl;
+
+    auto p2 = p;
+    p2.input.push_back(5);
+    executeProgram(p2);
+
+    std::cout << "Second result is " << p2.output.back() << std::endl;
 
     return 0;
 }
