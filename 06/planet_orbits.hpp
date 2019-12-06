@@ -33,7 +33,7 @@ int countAllOrbits(PlanetTree const& t);
 
 Node const* findPlanet(PlanetTree const& t, Planet const& p);
 
-std::vector<Node const*> pathFromRoot(PlanetTree const& t, Planet const& p);
+std::vector<Node const*> pathToRoot(PlanetTree const& t, Planet const& p);
 
 int commonElement(PlanetTree const& t, Planet const& p1, Planet const& p2);
 

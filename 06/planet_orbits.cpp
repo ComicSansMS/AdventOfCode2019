@@ -1,6 +1,6 @@
 #include <planet_orbits.hpp>
 
-#include <range/v3/algorithm/find.hpp>
+#include <range/v3/algorithm/find_if.hpp>
 #include <range/v3/view/split.hpp>
 #include <range/v3/range/conversion.hpp>
 
@@ -60,10 +60,10 @@ int countAllOrbits(PlanetTree const& t)
 
 Node const* findPlanet(PlanetTree const& t, Planet const& p)
 {
-    return &(*std::find_if(begin(t.nodes), end(t.nodes), [&p](Node const& n) { return n.planet == p; }));
+    return &(*ranges::find_if(t.nodes, [&p](Node const& n) { return n.planet == p; }));
 }
 
-std::vector<Node const*> pathFromRoot(PlanetTree const& t, Planet const& p)
+std::vector<Node const*> pathToRoot(PlanetTree const& t, Planet const& p)
 {
     Node const* n = findPlanet(t, p);
     std::vector<Node const*> ret;
@@ -73,11 +73,11 @@ std::vector<Node const*> pathFromRoot(PlanetTree const& t, Planet const& p)
 
 int commonElement(PlanetTree const& t, Planet const& p1, Planet const& p2)
 {
-    auto path1 = pathFromRoot(t, p1);
-    auto path2 = pathFromRoot(t, p2);
+    auto path1 = pathToRoot(t, p1);
+    auto path2 = pathToRoot(t, p2);
     auto [it_start1, it_start2] = std::mismatch(rbegin(path1), rend(path1), rbegin(path2), rend(path2));
     assert((*it_start1)->parent == (*it_start2)->parent);
-    int d1 = std::distance(begin(path1), it_start1.base());
-    int d2 = std::distance(begin(path2), it_start2.base());
-    return d1 + d2;
+    auto const d1 = std::distance(begin(path1), it_start1.base());
+    auto const d2 = std::distance(begin(path2), it_start2.base());
+    return static_cast<int>(d1 + d2);
 }
