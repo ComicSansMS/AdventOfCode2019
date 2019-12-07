@@ -1,8 +1,5 @@
 #include <amp_settings.hpp>
 
-//#include <range/v3/algorithm/permutation.hpp>
-//#include <range/v3/view/iota.hpp>
-
 #include <algorithm>
 #include <cassert>
 #include <numeric>
@@ -21,7 +18,7 @@ int determineMaxSignal(IntegerProgram const& p)
             executeProgram(ip);
             assert(ip.pc == -1);
             assert(ip.output.size() == 1);
-            signal = ip.output.front();
+            signal = ip.output.back();
         }
         max_signal = std::max(max_signal, signal);
     } while (std::next_permutation(begin(phases), end(phases)));
@@ -45,11 +42,14 @@ int determineMaxSignalWithFeedback(IntegerProgram const& p)
             assert(ip.pc >= 0);
             executeProgram(ip);
             assert(ip.output.size() == 1);
-            signal = ip.output.front();
-            ip.output.clear();
+            signal = ip.output.back();
+            ip.output.pop_back();
             if (ip.pc == -1) {
+                // amp has finished processing
                 ++done_count;
             } else {
+                // amp is awaiting input
+                assert(ip.pc == -4);
                 ip.pc = ip.resume_point;
             }
         }
