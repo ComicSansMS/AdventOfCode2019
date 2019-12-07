@@ -10,6 +10,7 @@ struct IntegerProgram {
     int pc;
     std::vector<int> input;
     std::vector<int> output;
+    int resume_point;
 };
 
 enum class Opcode {
