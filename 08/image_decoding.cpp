@@ -7,6 +7,7 @@
 
 Image parseInput(std::string_view input, int width, int height)
 {
+    assert((width > 0) && (height > 0));
     Image ret;
     ret.width = width;
     ret.height = height;
@@ -17,7 +18,7 @@ Image parseInput(std::string_view input, int width, int height)
         if (current_layer.empty()) { current_layer.reserve(width * height); }
         assert((c >= '0') && (c <= '9'));
         current_layer.push_back(c - '0');
-        if (current_layer.size() == width * height) {
+        if (current_layer.size() == static_cast<std::size_t>(width * height)) {
             ret.layers.emplace_back(std::move(current_layer));
             current_layer.clear();
         }
