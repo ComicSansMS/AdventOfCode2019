@@ -42,7 +42,12 @@ int main(int argc, char* argv[])
     executeProgram(p1);
 
     std::cout << "First result is " << p1.output.back() << std::endl;
-    //std::cout << "Second result is " << p2.output.back() << std::endl;
+
+    auto p2 = p;
+    p2.input.push_back(2);
+    executeProgram(p2);
+
+    std::cout << "Second result is " << p2.output.back() << std::endl;
 
     return 0;
 }
