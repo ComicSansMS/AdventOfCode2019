@@ -12,6 +12,7 @@ using Address = int64_t;
 struct IntegerProgram {
     std::unordered_map<Address, Word> memory;
     Address pc;
+    Address base;
     std::vector<Word> input;
     std::vector<Word> output;
     Address resume_point;
@@ -26,12 +27,14 @@ enum class Opcode {
     JumpIfFalse = 6,
     LessThan = 7,
     Equals = 8,
+    AdjustRelativeBase = 9,
     Halt = 99
 };
 
 enum class Mode {
     Position = 0,
     Immediate = 1,
+    Relative = 2,
     NoArgument = -1
 };
 

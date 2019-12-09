@@ -37,8 +37,11 @@ int main(int argc, char* argv[])
     }
 
     auto const p = parseInput(*input);
+    auto p1 = p;
+    p1.input.push_back(1);
+    executeProgram(p1);
 
-    //std::cout << "First result is " << p1.output.back() << std::endl;
+    std::cout << "First result is " << p1.output.back() << std::endl;
     //std::cout << "Second result is " << p2.output.back() << std::endl;
 
     return 0;

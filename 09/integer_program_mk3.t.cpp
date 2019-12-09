@@ -37,6 +37,8 @@ TEST_CASE("Integer Program")
         CHECK(p0.pc == 0);
         CHECK(p0.input.empty());
         CHECK(p0.output.empty());
+        CHECK(p0.base == 0);
+        CHECK(p0.resume_point == 0);
 
         auto const p1 = parseInput(program1);
         checkMemory(p1.memory, std::vector<Word>{1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50});
@@ -138,6 +140,7 @@ TEST_CASE("Integer Program")
         REQUIRE(p_no_input.input.empty());
         executeProgram(p_no_input);
         CHECK(p_no_input.pc == ResultCode::MissingInput);
+        CHECK(p_no_input.resume_point == 0);
 
         auto p_out_of_range = parseInput("3");
         p_out_of_range.input.push_back(42);
@@ -477,4 +480,58 @@ TEST_CASE("Integer Program")
             CHECK(p.output == std::vector<Word>{ 1001 });
         }
     }
+
+    SECTION("Relative Base Addressing")
+    {
+        {
+            auto p = parseInput("22201,4,5,0,99,2,1");
+            p.base = 1;
+            executeProgram(p);
+            CHECK(p.pc == ResultCode::Halted);
+            CHECK(p.memory[0] == 22201);
+            CHECK(p.memory[1] == 3);
+        }
+    }
+
+    SECTION("Opcode Adjust Relative Base")
+    {
+        {
+            auto p = parseInput("109,19,204,-34,99");
+            p.base = 2000;
+            p.memory[1985] = 42;
+            executeProgram(p);
+            CHECK(p.pc == ResultCode::Halted);
+            CHECK(p.base == 2019);
+            CHECK(p.output == std::vector<Word>{ 42 });
+        }
+    }
+
+    SECTION("Relative Base Samples")
+    {
+        {
+            char const sample_input[] = "109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99";
+            auto p = parseInput(sample_input);
+            std::vector<Word> expected_output;
+            for (Address i = 0; i < static_cast<Address>(p.memory.size()); ++i) {
+                auto it = p.memory.find(i);
+                REQUIRE(it != p.memory.end());
+                expected_output.push_back(it->second);
+            }
+            executeProgram(p);
+            CHECK(p.output == expected_output);
+        }
+        {
+            char const sample_input[] = "1102,34915192,34915192,7,4,7,99,0";
+            auto p = parseInput(sample_input);
+            executeProgram(p);
+            CHECK(p.output == std::vector<Word>{ 1219070632396864 });
+        }
+        {
+            char const sample_input[] = "104,1125899906842624,99";
+            auto p = parseInput(sample_input);
+            executeProgram(p);
+            CHECK(p.output == std::vector<Word>{ 1125899906842624 });
+        }
+    }
 }
+
