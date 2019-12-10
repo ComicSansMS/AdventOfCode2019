@@ -1,7 +1,7 @@
 #ifndef ADVENT_OF_CODE_10_ASTEROID_SCANNER_HPP_INCLUDE_GUARD
 #define ADVENT_OF_CODE_10_ASTEROID_SCANNER_HPP_INCLUDE_GUARD
 
-#include <ostream>
+#include <iosfwd>
 #include <string_view>
 #include <tuple>
 #include <vector>
@@ -10,22 +10,12 @@ struct Vector2 {
     int x;
     int y;
 
-    Vector2()
-        :x(0), y(0)
-    {}
-
-    Vector2(int xx, int yy)
-        :x(xx), y(yy)
-    {}
+    Vector2();
+    Vector2(int xx, int yy);
 };
 
-inline bool operator==(Vector2 const& lhs, Vector2 const& rhs) {
-    return (lhs.x == rhs.x) && (lhs.y == rhs.y);
-}
-
-inline std::ostream& operator<<(std::ostream& os, Vector2 const& v) {
-    return os << '[' << v.x << ',' << v.y << ']';
-}
+bool operator==(Vector2 const& lhs, Vector2 const& rhs);
+std::ostream& operator<<(std::ostream& os, Vector2 const& v);
 
 struct Line {
     Line(Vector2 const& origin, Vector2 const& target);

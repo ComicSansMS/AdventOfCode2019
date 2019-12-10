@@ -4,6 +4,23 @@
 #include <cassert>
 #include <cmath>
 #include <numeric>
+#include <ostream>
+
+Vector2::Vector2()
+    :x(0), y(0)
+{}
+
+Vector2::Vector2(int xx, int yy)
+    :x(xx), y(yy)
+{}
+
+bool operator==(Vector2 const& lhs, Vector2 const& rhs) {
+    return (lhs.x == rhs.x) && (lhs.y == rhs.y);
+}
+
+std::ostream& operator<<(std::ostream& os, Vector2 const& v) {
+    return os << '[' << v.x << ',' << v.y << ']';
+}
 
 Map parseInput(std::string_view input)
 {
@@ -144,7 +161,8 @@ std::vector<Vector2> vaporize(std::vector<Target> targets)
             targets[i].index = INVALID_INDEX;
         }
         // zzzzzzzap
-        targets.erase(std::remove_if(targets.begin(), targets.end(), [](Target const& t) {
+        targets.erase(
+            std::remove_if(targets.begin(), targets.end(), [](Target const& t) {
                 return t.index == INVALID_INDEX;
             }), targets.end());
     }
