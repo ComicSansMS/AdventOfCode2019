@@ -42,7 +42,12 @@ int main(int argc, char* argv[])
     auto const [visible, index] = bestVantagePoint(map);
 
     std::cout << "First result is " << visible << std::endl;
-    //std::cout << "Second result is " << p2.output.back() << std::endl;
+
+    auto const targets = determineTargets(map, index);
+    auto const vaporizing_order = vaporize(targets);
+    Vector2 target_200th = vaporizing_order[199];
+
+    std::cout << "Second result is " << target_200th.x << target_200th.y << std::endl;
 
     return 0;
 }

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <numeric>
 
 Map parseInput(std::string_view input)
@@ -87,4 +88,65 @@ std::tuple<int, std::size_t> bestVantagePoint(Map& m)
         }
     }
     return std::make_tuple(current_max, ret_index);
+}
+
+int dot(Vector2 const& v1, Vector2 const& v2)
+{
+    return (v1.x * v2.x) + (v1.y * v2.y);
+}
+
+std::vector<Target> determineTargets(Map& m, std::size_t origin)
+{
+    assert(origin < m.lines_of_sight.size());
+    std::vector<Line> const& targets = m.lines_of_sight[origin];
+    std::vector<Target> ret;
+    ret.reserve(targets.size() - 1);
+    Vector2 const reference(0, -1);
+    float constexpr PI = 3.1415926535897932384626433832795f;
+    for (std::size_t i = 0; i < targets.size(); ++i) {
+        Line const& target_los = targets[i];
+        if (target_los.distance == 0) { /* skip yourself */ continue; }
+        Vector2 const& target_position = m.asteroid_positions[i];
+        int const length_los_sq = dot(target_los.angle, target_los.angle);
+        float angle = std::acos(
+            static_cast<float>(dot(reference, target_los.angle)) / std::sqrt(static_cast<float>(length_los_sq)));
+        if (target_los.angle.x < 0) { angle = (2.f * PI) - angle; }
+        ret.push_back(Target{ i, target_position, target_los, angle });
+    }
+    std::sort(ret.begin(), ret.end(), [](Target const& t1, Target const& t2) { return t1.angle < t2.angle; });
+    return ret;
+}
+
+std::vector<Vector2> vaporize(std::vector<Target> targets)
+{
+    std::vector<Vector2> ret;
+    std::size_t constexpr INVALID_INDEX = std::numeric_limits<std::size_t>::max();
+    ret.reserve(targets.size());
+    while (!targets.empty()) {
+        std::size_t beginning_of_range = 0;
+        Vector2 current_angle_range = targets.front().line_of_sight.angle;
+        for (std::size_t i = 0; i < targets.size(); ++i) {
+            if (targets[i].line_of_sight.angle != current_angle_range) {
+                beginning_of_range = i;
+                current_angle_range = targets[i].line_of_sight.angle;
+            }
+            bool is_obstructed = false;
+            for (std::size_t j = beginning_of_range; j < targets.size(); ++j) {
+                if (!(targets[j].line_of_sight.angle == targets[i].line_of_sight.angle)) { break; }
+                if (targets[j].line_of_sight.distance < targets[i].line_of_sight.distance) {
+                    is_obstructed = true;
+                    break;
+                }
+            }
+            if (is_obstructed) { continue; }
+            ret.push_back(targets[i].position);
+            // mark for zapping
+            targets[i].index = INVALID_INDEX;
+        }
+        // zzzzzzzap
+        targets.erase(std::remove_if(targets.begin(), targets.end(), [INVALID_INDEX](Target const& t) {
+                return t.index == INVALID_INDEX;
+            }), targets.end());
+    }
+    return ret;
 }

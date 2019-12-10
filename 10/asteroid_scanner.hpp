@@ -49,4 +49,17 @@ int asteroidsVisibleFrom(Map& m, std::size_t origin_index);
 
 std::tuple<int, std::size_t> bestVantagePoint(Map& m);
 
+int dot(Vector2 const& v1, Vector2 const& v2);
+
+struct Target {
+    std::size_t index;
+    Vector2 position;
+    Line line_of_sight;
+    float angle;
+};
+
+std::vector<Target> determineTargets(Map& m, std::size_t origin);
+
+std::vector<Vector2> vaporize(std::vector<Target> targets);
+
 #endif
