@@ -1,7 +1,7 @@
 language: cpp
-sudo: false
+os: linux
 
-matrix:
+jobs:
   include:
     - os: linux
       dist: bionic
