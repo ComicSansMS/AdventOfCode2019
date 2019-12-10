@@ -6,6 +6,18 @@
 
 TEST_CASE("Asteroid Scanner")
 {
+    SECTION("Vector2")
+    {
+        CHECK(Vector2().x == 0);
+        CHECK(Vector2().y == 0);
+        CHECK(Vector2(1, 2).x == 1);
+        CHECK(Vector2(1, 2).y == 2);
+        CHECK(Vector2(1, 2) == Vector2(1, 2));
+        CHECK_FALSE(Vector2(1, 2) == Vector2(0, 2));
+        CHECK_FALSE(Vector2(1, 2) == Vector2(1, 0));
+        CHECK_FALSE(Vector2(1, 2) == Vector2(0, 0));
+    }
+
     char const sample_input[] = ".#..#\n"
                                 ".....\n"
                                 "#####\n"
