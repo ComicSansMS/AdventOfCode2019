@@ -126,7 +126,7 @@ std::vector<Vector2> vaporize(std::vector<Target> targets)
         std::size_t beginning_of_range = 0;
         Vector2 current_angle_range = targets.front().line_of_sight.angle;
         for (std::size_t i = 0; i < targets.size(); ++i) {
-            if (targets[i].line_of_sight.angle != current_angle_range) {
+            if (!(targets[i].line_of_sight.angle == current_angle_range)) {
                 beginning_of_range = i;
                 current_angle_range = targets[i].line_of_sight.angle;
             }
@@ -144,7 +144,7 @@ std::vector<Vector2> vaporize(std::vector<Target> targets)
             targets[i].index = INVALID_INDEX;
         }
         // zzzzzzzap
-        targets.erase(std::remove_if(targets.begin(), targets.end(), [INVALID_INDEX](Target const& t) {
+        targets.erase(std::remove_if(targets.begin(), targets.end(), [](Target const& t) {
                 return t.index == INVALID_INDEX;
             }), targets.end());
     }
