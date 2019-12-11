@@ -127,6 +127,24 @@ TEST_CASE("Intcode Robot")
         CHECK(scanPanel(s) == Color::Black);
     }
 
+    SECTION("Intcode Execution")
+    {
+        char const* intcode_program = "104,1,104,0,"
+                                      "104,0,104,0,"
+                                      "104,1,104,0,"
+                                      "104,1,104,0,"
+                                      "3,0,"
+                                      "104,0,104,1,"
+                                      "104,1,104,0,"
+                                      "104,1,104,0,"
+                                      "3,1,99";
+        IntcodeRobot r(intcode_program);
+        r.run();
+        CHECK(r.robot.grid.size() == 6);
+        CHECK(r.program.memory[0] == Color::White);
+        CHECK(r.program.memory[1] == Color::Black);
+    }
+
     SECTION("Grid Output")
     {
         RobotState s;
@@ -139,6 +157,28 @@ TEST_CASE("Intcode Robot")
         processInput(s, std::vector<Word>{1, 0});
         std::stringstream sstr;
         sstr << s;
+        CHECK(sstr.str() == ".....\n"
+                            "...#.\n"
+                            "...#.\n"
+                            ".##..\n"
+                            ".....\n");
+    }
+
+    SECTION("Grid Output From Intcode")
+    {
+        char const* intcode_program = "104,1,104,0,"
+                                      "104,0,104,0,"
+                                      "104,1,104,0,"
+                                      "104,1,104,0,"
+                                      "3,0,"
+                                      "104,0,104,1,"
+                                      "104,1,104,0,"
+                                      "104,1,104,0,"
+                                      "3,1,99";
+        IntcodeRobot r(intcode_program);
+        r.run();
+        std::stringstream sstr;
+        sstr << r.robot;
         CHECK(sstr.str() == ".....\n"
                             "...#.\n"
                             "...#.\n"
