@@ -160,48 +160,37 @@ template<> struct hash<std::vector<PvPair>>
 
 int64_t findRepeatingState_clever(PlanetarySystem p)
 {
-    std::array<std::unordered_set<std::vector<PvPair>>, 3> states_xyz;
+    std::array<std::vector<PvPair>, 3> states_xyz;
+    for (std::size_t i = 0; i < p.size(); ++i) {
+        states_xyz[0].push_back(PvPair{ p[i].position.x, p[i].velocity.x });
+        states_xyz[1].push_back(PvPair{ p[i].position.y, p[i].velocity.y });
+        states_xyz[2].push_back(PvPair{ p[i].position.z, p[i].velocity.z });
+    }
     std::array<int64_t, 3> steps_xyz{};
-    std::vector<PvPair> planets(p.size());
-    for (;;) {
+    auto check_state_dimension =
+        [&steps_xyz, &states_xyz, planets = std::vector<PvPair>(p.size())]
+        (int Vector3::* axis, PlanetarySystem const& p, int64_t steps) mutable -> bool
+        {
+            int const index = (axis == &Vector3::x) ? 0 : (axis == &Vector3::y ? 1 : 2);
+            if (steps_xyz[index] == 0) {
+                for (std::size_t i = 0; i < planets.size(); ++i) {
+                    planets[i] = PvPair{ p[i].position.*axis, p[i].velocity.*axis };
+                }
+                if (states_xyz[index] == planets) {
+                    steps_xyz[index] = steps;
+                }
+                return true;
+            } else {
+                return false;
+            }
+        };
+    for (int64_t steps = 1; ; ++steps) {
         bool do_continue = false;
-        if (steps_xyz[0] == 0) {
-            for (std::size_t i = 0; i < p.size(); ++i) {
-                planets[i] = PvPair{ p[i].position.x, p[i].velocity.x };
-            }
-            if (states_xyz[0].find(planets) != states_xyz[0].end()) {
-                steps_xyz[0] = static_cast<int64_t>(states_xyz[0].size());
-            } else {
-                states_xyz[0].insert(planets);
-            }
-            do_continue = true;
-        }
-
-        if (steps_xyz[1] == 0) {
-            for (std::size_t i = 0; i < p.size(); ++i) {
-                planets[i] = PvPair{ p[i].position.y, p[i].velocity.y };
-            }
-            if (states_xyz[1].find(planets) != states_xyz[1].end()) {
-                steps_xyz[1] = static_cast<int64_t>(states_xyz[1].size());
-            } else {
-                states_xyz[1].insert(planets);
-            }
-            do_continue = true;
-        }
-
-        if (steps_xyz[2] == 0) {
-            for (std::size_t i = 0; i < p.size(); ++i) {
-                planets[i] = PvPair{ p[i].position.z, p[i].velocity.z };
-            }
-            if (states_xyz[2].find(planets) != states_xyz[2].end()) {
-                steps_xyz[2] = static_cast<int64_t>(states_xyz[2].size());
-            } else {
-                states_xyz[2].insert(planets);
-            }
-            do_continue = true;
-        }
-        if (!do_continue) { break; }
         p = simulate(p);
+        do_continue |= check_state_dimension(&Vector3::x, p, steps);
+        do_continue |= check_state_dimension(&Vector3::y, p, steps);
+        do_continue |= check_state_dimension(&Vector3::z, p, steps);
+        if (!do_continue) { break; }
     }
 
     int64_t ret = std::lcm(steps_xyz[0], std::lcm(steps_xyz[1], steps_xyz[2]));
