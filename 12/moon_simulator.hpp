@@ -4,7 +4,6 @@
 #include <array>
 #include <iosfwd>
 #include <string_view>
-#include <vector>
 
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v)

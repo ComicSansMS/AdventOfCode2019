@@ -134,7 +134,6 @@ int64_t findRepeatingState_clever(PlanetarySystem p)
 {
     std::array<std::array<PvPair, 4>, 3> states_xyz;
     auto getPvForAxis = [](int Vector3::* axis, PlanetarySystem const& p) -> std::array<PvPair, 4> {
-        int const index = (axis == &Vector3::x) ? 0 : (axis == &Vector3::y ? 1 : 2);
         std::array<PvPair, 4> ret;
         for (std::size_t planet_index = 0; planet_index < ret.size(); ++planet_index) {
             ret[planet_index] = PvPair{ p[planet_index].position.*axis, p[planet_index].velocity.*axis };
