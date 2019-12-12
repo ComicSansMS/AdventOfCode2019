@@ -506,7 +506,7 @@ TEST_CASE("Moon Simulator")
         CHECK(findRepeatingState_clever(p) == 2772);
     }
 
-    SECTION("Brute Force Simulation")
+    SECTION("Clever Simulation #2")
     {
         PlanetarySystem p = parseInput(sample_input2);
         CHECK(findRepeatingState_clever(p) == 4686774924);
