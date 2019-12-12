@@ -493,4 +493,22 @@ TEST_CASE("Moon Simulator")
         // Sum of total energy: 290 + 608 + 574 + 468 = 1940
         CHECK(totalEnergy(p) == 1940);
     }
+
+    SECTION("Brute Force Simulation")
+    {
+        PlanetarySystem p = parseInput(sample_input);
+        CHECK(findRepeatingState_brute_force(p) == 2772);
+    }
+
+    SECTION("Clever Simulation")
+    {
+        PlanetarySystem p = parseInput(sample_input);
+        CHECK(findRepeatingState_clever(p) == 2772);
+    }
+
+    SECTION("Brute Force Simulation")
+    {
+        PlanetarySystem p = parseInput(sample_input2);
+        CHECK(findRepeatingState_clever(p) == 4686774924);
+    }
 }

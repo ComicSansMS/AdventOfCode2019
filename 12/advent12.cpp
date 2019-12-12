@@ -42,7 +42,8 @@ int main(int argc, char* argv[])
     for (int i = 0; i<1000; ++i) { p1 = simulate(p1); }
 
     std::cout << "First result is " << totalEnergy(p1) << std::endl;
-    //std::cout << "Second result is\n" << r2.robot << std::endl;
+
+    std::cout << "Second result is " << findRepeatingState_clever(p) << std::endl;
 
     return 0;
 }

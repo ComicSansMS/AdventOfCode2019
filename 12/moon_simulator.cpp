@@ -1,11 +1,13 @@
 #include <moon_simulator.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <iterator>
 #include <numeric>
 #include <ostream>
 #include <regex>
+#include <tuple>
 
 Vector3::Vector3()
     :x(0), y(0), z(0)
@@ -30,6 +32,11 @@ bool operator==(Vector3 const& lhs, Vector3 const& rhs)
 std::ostream& operator<<(std::ostream& os, Vector3 const& v)
 {
     return os << '[' << v.x << ',' << v.y << ',' << v.z << ']';
+}
+
+bool operator==(Moon const& lhs, Moon const& rhs)
+{
+    return (lhs.position == rhs.position) && (lhs.velocity == rhs.velocity);
 }
 
 PlanetarySystem parseInput(std::string_view input)
@@ -102,4 +109,101 @@ int totalEnergy(PlanetarySystem const& p)
 {
     return std::accumulate(p.begin(), p.end(), 0,
         [](int acc, Moon const& m) -> int { return acc + (potentialEnergy(m) * kineticEnergy(m)); });
+}
+
+int64_t findRepeatingState_brute_force(PlanetarySystem p)
+{
+    //std::unordered_set<PlanetarySystem> states;
+    PlanetarySystem const original = p;
+    p = simulate(p);
+    int64_t steps = 1;
+    while (p != original) {
+        p = simulate(p);
+        ++steps;
+    }
+    return steps;
+}
+
+struct PvPair {
+    int p;
+    int v;
+};
+bool operator==(PvPair const& lhs, PvPair const& rhs) {
+    return (lhs.p == rhs.p) && (lhs.v == rhs.v);
+}
+
+namespace std {
+
+template<> struct hash<PvPair>
+{
+    std::size_t operator()(PvPair const& pv) const noexcept
+    {
+        std::hash<int> hasher;
+        std::size_t seed = hasher(pv.p);
+        hash_combine(seed, pv.v);
+        return seed;
+    }
+};
+
+template<> struct hash<std::vector<PvPair>>
+{
+    std::size_t operator()(std::vector<PvPair> const& v) const noexcept
+    {
+        if (v.empty()) { return 0; }
+        std::size_t seed = std::hash<PvPair>{}(v.front());
+        for (auto it = v.begin() + 1; it != v.end(); ++it) { hash_combine(seed, *it); }
+        return seed;
+    }
+};
+
+}
+
+int64_t findRepeatingState_clever(PlanetarySystem p)
+{
+    std::array<std::unordered_set<std::vector<PvPair>>, 3> states_xyz;
+    std::array<int64_t, 3> steps_xyz{};
+    std::vector<PvPair> planets(p.size());
+    for (;;) {
+        bool do_continue = false;
+        if (steps_xyz[0] == 0) {
+            for (std::size_t i = 0; i < p.size(); ++i) {
+                planets[i] = PvPair{ p[i].position.x, p[i].velocity.x };
+            }
+            if (states_xyz[0].find(planets) != states_xyz[0].end()) {
+                steps_xyz[0] = static_cast<int64_t>(states_xyz[0].size());
+            } else {
+                states_xyz[0].insert(planets);
+            }
+            do_continue = true;
+        }
+
+        if (steps_xyz[1] == 0) {
+            for (std::size_t i = 0; i < p.size(); ++i) {
+                planets[i] = PvPair{ p[i].position.y, p[i].velocity.y };
+            }
+            if (states_xyz[1].find(planets) != states_xyz[1].end()) {
+                steps_xyz[1] = static_cast<int64_t>(states_xyz[1].size());
+            } else {
+                states_xyz[1].insert(planets);
+            }
+            do_continue = true;
+        }
+
+        if (steps_xyz[2] == 0) {
+            for (std::size_t i = 0; i < p.size(); ++i) {
+                planets[i] = PvPair{ p[i].position.z, p[i].velocity.z };
+            }
+            if (states_xyz[2].find(planets) != states_xyz[2].end()) {
+                steps_xyz[2] = static_cast<int64_t>(states_xyz[2].size());
+            } else {
+                states_xyz[2].insert(planets);
+            }
+            do_continue = true;
+        }
+        if (!do_continue) { break; }
+        p = simulate(p);
+    }
+
+    int64_t ret = std::lcm(steps_xyz[0], std::lcm(steps_xyz[1], steps_xyz[2]));
+    return ret;
 }
