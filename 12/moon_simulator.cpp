@@ -1,7 +1,6 @@
 #include <moon_simulator.hpp>
 
 #include <algorithm>
-#include <array>
 #include <cassert>
 #include <iterator>
 #include <numeric>
@@ -47,7 +46,7 @@ PlanetarySystem parseInput(std::string_view input)
     using regex_it = std::regex_iterator<std::string_view::iterator>;
     auto const it_begin = regex_it(begin(input), end(input), rx_line);
     auto const it_end = regex_it();
-    std::transform(it_begin, it_end, std::back_inserter(ret),
+    std::transform(it_begin, it_end, ret.begin(),
         [](std::match_results<std::string_view::iterator> const& match) -> Moon {
             return Moon{Vector3(std::stoi(match[1]), std::stoi(match[2]), std::stoi(match[3])), Vector3() };
         });
@@ -113,7 +112,6 @@ int totalEnergy(PlanetarySystem const& p)
 
 int64_t findRepeatingState_brute_force(PlanetarySystem p)
 {
-    //std::unordered_set<PlanetarySystem> states;
     PlanetarySystem const original = p;
     p = simulate(p);
     int64_t steps = 1;
@@ -132,65 +130,36 @@ bool operator==(PvPair const& lhs, PvPair const& rhs) {
     return (lhs.p == rhs.p) && (lhs.v == rhs.v);
 }
 
-namespace std {
-
-template<> struct hash<PvPair>
-{
-    std::size_t operator()(PvPair const& pv) const noexcept
-    {
-        std::hash<int> hasher;
-        std::size_t seed = hasher(pv.p);
-        hash_combine(seed, pv.v);
-        return seed;
-    }
-};
-
-template<> struct hash<std::vector<PvPair>>
-{
-    std::size_t operator()(std::vector<PvPair> const& v) const noexcept
-    {
-        if (v.empty()) { return 0; }
-        std::size_t seed = std::hash<PvPair>{}(v.front());
-        for (auto it = v.begin() + 1; it != v.end(); ++it) { hash_combine(seed, *it); }
-        return seed;
-    }
-};
-
-}
-
 int64_t findRepeatingState_clever(PlanetarySystem p)
 {
-    std::array<std::vector<PvPair>, 3> states_xyz;
-    for (std::size_t i = 0; i < p.size(); ++i) {
-        states_xyz[0].push_back(PvPair{ p[i].position.x, p[i].velocity.x });
-        states_xyz[1].push_back(PvPair{ p[i].position.y, p[i].velocity.y });
-        states_xyz[2].push_back(PvPair{ p[i].position.z, p[i].velocity.z });
-    }
-    std::array<int64_t, 3> steps_xyz{};
-    auto check_state_dimension =
-        [&steps_xyz, &states_xyz, planets = std::vector<PvPair>(p.size())]
-        (int Vector3::* axis, PlanetarySystem const& p, int64_t steps) mutable -> bool
+    std::array<std::array<PvPair, 4>, 3> states_xyz;
+    auto getPvForAxis = [](int Vector3::* axis, PlanetarySystem const& p) -> std::array<PvPair, 4> {
+        int const index = (axis == &Vector3::x) ? 0 : (axis == &Vector3::y ? 1 : 2);
+        std::array<PvPair, 4> ret;
+        for (std::size_t planet_index = 0; planet_index < ret.size(); ++planet_index) {
+            ret[planet_index] = PvPair{ p[planet_index].position.*axis, p[planet_index].velocity.*axis };
+        }
+        return ret;
+    };
+    states_xyz[0] = getPvForAxis(&Vector3::x, p);
+    states_xyz[1] = getPvForAxis(&Vector3::y, p);
+    states_xyz[2] = getPvForAxis(&Vector3::z, p);
+
+    auto check_for_circle_in_dimension =
+        [&states_xyz, getPvForAxis] (int Vector3::* axis, PlanetarySystem const& p, int64_t steps) -> int64_t
         {
             int const index = (axis == &Vector3::x) ? 0 : (axis == &Vector3::y ? 1 : 2);
-            if (steps_xyz[index] == 0) {
-                for (std::size_t i = 0; i < planets.size(); ++i) {
-                    planets[i] = PvPair{ p[i].position.*axis, p[i].velocity.*axis };
-                }
-                if (states_xyz[index] == planets) {
-                    steps_xyz[index] = steps;
-                }
-                return true;
-            } else {
-                return false;
-            }
+            std::array<PvPair, 4> const planets = getPvForAxis(axis, p);
+            if (states_xyz[index] == planets) { return steps; }
+            return 0;
         };
-    for (int64_t steps = 1; ; ++steps) {
-        bool do_continue = false;
+
+    std::array<int64_t, 3> steps_xyz{};
+    for (int64_t steps = 1; std::count(begin(steps_xyz), end(steps_xyz), 0) != 0; ++steps) {
         p = simulate(p);
-        do_continue |= check_state_dimension(&Vector3::x, p, steps);
-        do_continue |= check_state_dimension(&Vector3::y, p, steps);
-        do_continue |= check_state_dimension(&Vector3::z, p, steps);
-        if (!do_continue) { break; }
+        steps_xyz[0] = (steps_xyz[0] != 0) ? steps_xyz[0] : check_for_circle_in_dimension(&Vector3::x, p, steps);
+        steps_xyz[1] = (steps_xyz[1] != 0) ? steps_xyz[1] : check_for_circle_in_dimension(&Vector3::y, p, steps);
+        steps_xyz[2] = (steps_xyz[2] != 0) ? steps_xyz[2] : check_for_circle_in_dimension(&Vector3::z, p, steps);
     }
 
     int64_t ret = std::lcm(steps_xyz[0], std::lcm(steps_xyz[1], steps_xyz[2]));

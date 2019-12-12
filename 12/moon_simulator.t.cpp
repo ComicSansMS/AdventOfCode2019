@@ -89,10 +89,10 @@ TEST_CASE("Moon Simulator")
     SECTION("Potential Energy")
     {
         PlanetarySystem p;
-        p.push_back(Moon{ Vector3( 2,  1, -3), Vector3(-3, -2,  1) });
-        p.push_back(Moon{ Vector3( 1, -8,  0), Vector3(-1,  1,  3) });
-        p.push_back(Moon{ Vector3( 3, -6,  1), Vector3( 3,  2, -3) });
-        p.push_back(Moon{ Vector3( 2,  0,  4), Vector3( 1, -1, -1) });
+        p[0] = Moon{ Vector3( 2,  1, -3), Vector3(-3, -2,  1) };
+        p[1] = Moon{ Vector3( 1, -8,  0), Vector3(-1,  1,  3) };
+        p[2] = Moon{ Vector3( 3, -6,  1), Vector3( 3,  2, -3) };
+        p[3] = Moon{ Vector3( 2,  0,  4), Vector3( 1, -1, -1) };
         CHECK(potentialEnergy(p[0]) ==  6);
         CHECK(potentialEnergy(p[1]) ==  9);
         CHECK(potentialEnergy(p[2]) == 10);
@@ -102,10 +102,10 @@ TEST_CASE("Moon Simulator")
     SECTION("Kinetic Energy")
     {
         PlanetarySystem p;
-        p.push_back(Moon{ Vector3( 2,  1, -3), Vector3(-3, -2,  1) });
-        p.push_back(Moon{ Vector3( 1, -8,  0), Vector3(-1,  1,  3) });
-        p.push_back(Moon{ Vector3( 3, -6,  1), Vector3( 3,  2, -3) });
-        p.push_back(Moon{ Vector3( 2,  0,  4), Vector3( 1, -1, -1) });
+        p[0] = Moon{ Vector3( 2,  1, -3), Vector3(-3, -2,  1) };
+        p[1] = Moon{ Vector3( 1, -8,  0), Vector3(-1,  1,  3) };
+        p[2] = Moon{ Vector3( 3, -6,  1), Vector3( 3,  2, -3) };
+        p[3] = Moon{ Vector3( 2,  0,  4), Vector3( 1, -1, -1) };
         CHECK(kineticEnergy(p[0]) == 6);
         CHECK(kineticEnergy(p[1]) == 5);
         CHECK(kineticEnergy(p[2]) == 8);
@@ -115,10 +115,10 @@ TEST_CASE("Moon Simulator")
     SECTION("Total Energy")
     {
         PlanetarySystem p;
-        p.push_back(Moon{ Vector3( 2,  1, -3), Vector3(-3, -2,  1) });
-        p.push_back(Moon{ Vector3( 1, -8,  0), Vector3(-1,  1,  3) });
-        p.push_back(Moon{ Vector3( 3, -6,  1), Vector3( 3,  2, -3) });
-        p.push_back(Moon{ Vector3( 2,  0,  4), Vector3( 1, -1, -1) });
+        p[0] = Moon{ Vector3( 2,  1, -3), Vector3(-3, -2,  1) };
+        p[1] = Moon{ Vector3( 1, -8,  0), Vector3(-1,  1,  3) };
+        p[2] = Moon{ Vector3( 3, -6,  1), Vector3( 3,  2, -3) };
+        p[3] = Moon{ Vector3( 2,  0,  4), Vector3( 1, -1, -1) };
         CHECK(totalEnergy(p) == 179);
     }
 
