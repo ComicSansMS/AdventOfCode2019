@@ -6,6 +6,13 @@
 
 TEST_CASE("Fuel Refinement")
 {
+    SECTION("Component ostream inserter")
+    {
+        std::stringstream sstr;
+        sstr << Component{ 42, "FOO" };
+        CHECK(sstr.str() == "42 FOO");
+    }
+
     char const sample_input1[] = "10 ORE => 10 A\n"
                                  "1 ORE => 1 B\n"
                                  "7 A, 1 B => 1 C\n"
