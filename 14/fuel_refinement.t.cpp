@@ -120,8 +120,8 @@ TEST_CASE("Fuel Refinement")
 
     SECTION("One Trillion Fuel")
     {
-        //CHECK(fuelFromOneTrillion(buildReactionMap(parseInput(sample_input3))) == 82892753);
-        //CHECK(fuelFromOneTrillion(buildReactionMap(parseInput(sample_input4))) == 5586022);
+        CHECK(fuelFromOneTrillion(buildReactionMap(parseInput(sample_input3))) == 82892753);
+        CHECK(fuelFromOneTrillion(buildReactionMap(parseInput(sample_input4))) == 5586022);
         CHECK(fuelFromOneTrillion(buildReactionMap(parseInput(sample_input5))) == 460664);
     }
 }

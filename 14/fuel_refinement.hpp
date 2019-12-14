@@ -27,6 +27,8 @@ Factory parseInput(std::string_view input);
 using ReactionMap = std::unordered_map<std::string, Reaction const*>;
 ReactionMap buildReactionMap(Factory const& f);
 
+int64_t oreForNFuel(ReactionMap const& m, int64_t n);
+
 int64_t oreForOneFuel(ReactionMap const& m);
 
 int64_t fuelFromOneTrillion(ReactionMap const& m);

@@ -90,41 +90,37 @@ int64_t oreRequired(ReactionMap const& m, Reaction const* r, int64_t components_
     return acc;
 }
 
-int64_t oreForOneFuel(ReactionMap const& m)
+int64_t oreForNFuel(ReactionMap const& m, int64_t n)
 {
     auto const it = m.find("FUEL");
     assert(it != m.end());
     std::unordered_map<std::string, int64_t> global_reservoir;
     global_reservoir.reserve(m.size());
     std::unordered_map<std::string, int64_t> totals;
-    int64_t const res = oreRequired(m, it->second, 1, global_reservoir, totals);
+    int64_t const res = oreRequired(m, it->second, n, global_reservoir, totals);
     return res;
+}
+
+int64_t oreForOneFuel(ReactionMap const& m)
+{
+    return oreForNFuel(m, 1);
 }
 
 int64_t fuelFromOneTrillion(ReactionMap const& m)
 {
-    auto const it = m.find("FUEL");
-    assert(it != m.end());
-    std::unordered_map<std::string, int64_t> global_reservoir;
-    global_reservoir.reserve(m.size());
-    std::unordered_map<std::string, int64_t> totals;
-
     int64_t const initial_ore = 1'000'000'000'000;
-    int64_t ore_source = initial_ore;
-    int64_t fuel_count = 0;
-    for (;;) {
-        int64_t const res = oreRequired(m, it->second, 1, global_reservoir, totals);
-        ore_source -= res;
-        if (ore_source < 0) { break; }
-        ++fuel_count;
-        if (std::all_of(global_reservoir.begin(), global_reservoir.end(), [](auto const& p) { return p.second == 0; }))
-        {
-            // shortcut: subtract the full cycles that we can obtain from the current ore left in source
-            int64_t const ore_consumed_so_far = initial_ore - ore_source;
-            int64_t const full_cycles = ore_source / ore_consumed_so_far;
-            fuel_count += (full_cycles * fuel_count);
-            ore_source -= full_cycles * ore_consumed_so_far;
+    int64_t searcher = 1;
+    int64_t max_pot = 0;
+    while (oreForNFuel(m, searcher) < initial_ore) {
+        searcher *= 2;
+        ++max_pot;
+    }
+    searcher = 0;
+    for (int64_t i = max_pot - 1; i >= 0; --i) {
+        int64_t i_search = searcher + (1 << i);
+        if (oreForNFuel(m, i_search) <= initial_ore) {
+            searcher = i_search;
         }
     }
-    return fuel_count;
+    return searcher;
 }
