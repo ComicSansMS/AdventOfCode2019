@@ -17,6 +17,9 @@ TEST_CASE("Intcode Robot")
         CHECK_FALSE(Vector2(1, 2) == Vector2(0, 2));
         CHECK_FALSE(Vector2(1, 2) == Vector2(1, 0));
         CHECK_FALSE(Vector2(1, 2) == Vector2(0, 0));
+        std::stringstream sstr;
+        sstr << Vector2(5, -12);
+        CHECK(sstr.str() == "[5,-12]");
     }
 
     SECTION("Robot State Construction")
