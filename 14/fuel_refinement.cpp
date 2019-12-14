@@ -109,15 +109,16 @@ int64_t oreForOneFuel(ReactionMap const& m)
 int64_t fuelFromOneTrillion(ReactionMap const& m)
 {
     int64_t const initial_ore = 1'000'000'000'000;
-    int64_t searcher = 1;
+    // determine the maximum number of bits for the result
     int64_t max_pot = 0;
-    while (oreForNFuel(m, searcher) < initial_ore) {
-        searcher *= 2;
+    while (oreForNFuel(m, (1ll << max_pot)) < initial_ore) {
         ++max_pot;
+        assert(max_pot < 64);
     }
-    searcher = 0;
+    // figure out for each bit individually whether it's 1 or 0
+    int64_t searcher = 0;
     for (int64_t i = max_pot - 1; i >= 0; --i) {
-        int64_t i_search = searcher + (1 << i);
+        int64_t i_search = searcher + (1ll << i);
         if (oreForNFuel(m, i_search) <= initial_ore) {
             searcher = i_search;
         }
