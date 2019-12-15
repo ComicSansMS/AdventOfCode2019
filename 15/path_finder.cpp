@@ -283,8 +283,6 @@ std::ostream& operator<<(std::ostream& os, MazeMap const& m)
     int const max_x = it_max_x->first.x;
     int const min_y = it_min_y->first.y;
     int const max_y = it_max_y->first.y;
-    int const width = max_x - min_x;
-    int const height = max_y - min_y;
 
     for (int y = max_y; y > min_y - 1; --y) {
         for (int x = min_x; x < max_x + 1; ++x) {
