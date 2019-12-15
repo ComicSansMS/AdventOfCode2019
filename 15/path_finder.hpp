@@ -55,7 +55,7 @@ enum class Direction : Word {
 enum class Tile {
     Empty = 0,
     Wall,
-    Target
+    Target,
 };
 
 struct MockProgram {
@@ -116,6 +116,10 @@ std::vector<Word> toInput(std::vector<Direction> const& v);
 
 MazeMap floodFill(Scanner& s, std::ostream* os = nullptr);
 
+MazeMap::const_iterator find_target(MazeMap const& map);
+
 std::ostream& operator<<(std::ostream& os, MazeMap const& m);
+
+int floodFill2(MazeMap map, std::ostream* os = nullptr);
 
 #endif

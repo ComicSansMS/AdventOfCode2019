@@ -203,7 +203,7 @@ void walkToKnownPosition(Scanner& s, MazeMap const& map, Vector2 destination)
     assert(s.pc() == ResultCode::MissingInput);
     assert(s.input().empty());
     assert(s.output().size() == path.size());
-    assert(std::all_of(s.output().begin(), s.output().end(), [](Word o) { return o == 1; }));
+    assert(std::all_of(s.output().begin(), s.output().end(), [](Word o) { return (o == 1) || (o == 2); }));
     s.output().clear();
     s.position = destination;
 }
@@ -268,6 +268,11 @@ MazeMap floodFill(Scanner& s, std::ostream* os)
     return map;
 }
 
+MazeMap::const_iterator find_target(MazeMap const& map)
+{
+    return std::find_if(map.begin(), map.end(), [](auto const& p) { return p.second.t == Tile::Target; });
+}
+
 std::ostream& operator<<(std::ostream& os, MazeMap const& m)
 {
     auto const [it_min_x, it_max_x] = std::minmax_element(m.begin(), m.end(),
@@ -303,5 +308,40 @@ std::ostream& operator<<(std::ostream& os, MazeMap const& m)
     }
     std::flush(os);
     return os;
+}
+
+int floodFill2(MazeMap map, std::ostream* os)
+{
+    for (auto& m : map) { m.second.path.clear(); }
+    auto it_target = find_target(map);
+    assert(it_target != map.end());
+    Vector2 const starting_point = it_target->first;
+
+    int ret = 0;
+    std::deque<Step> queue;
+    queue.emplace_back(starting_point, Direction::East);
+    queue.emplace_back(starting_point, Direction::North);
+    queue.emplace_back(starting_point, Direction::West);
+    queue.emplace_back(starting_point, Direction::South);
+    while (!queue.empty())
+    {
+        Step next = queue.front();
+        queue.pop_front();
+        Vector2 position = next.getTargetPosition();
+        assert(map.find(position) != map.end());
+        MapTile& map_tile = map[position];
+        if ((map_tile.t == Tile::Target) || (map_tile.t == Tile::Wall)) { continue; }
+        assert(map_tile.path.empty());
+        map_tile.t = Tile::Target;
+        map_tile.path = map[next.initial_position].path;
+        map_tile.path.push_back(next.step);
+        ret = std::max(ret, static_cast<int>(map_tile.path.size()));
+        queue.emplace_back(position, Direction::East);
+        queue.emplace_back(position, Direction::North);
+        queue.emplace_back(position, Direction::West);
+        queue.emplace_back(position, Direction::South);
+        if (os) { (*os) << map << "\n\n"; }
+    }
+    return ret;
 }
 

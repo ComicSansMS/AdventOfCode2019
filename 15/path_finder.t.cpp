@@ -37,8 +37,8 @@ TEST_CASE("Path Finder")
     char const test_map[] = "      \n"
                             "   ## \n"
                             "  #O.#\n"
-                            "  X.# \n"
-                            "   #  \n";
+                            " #X.# \n"
+                            "  ##  \n";
 
     SECTION("Mock Construction")
     {
@@ -72,7 +72,7 @@ TEST_CASE("Path Finder")
 
         // fourth row
         CHECK(m.map.find(Vector2(-3, -1))->second == Tile::Empty);
-        CHECK(m.map.find(Vector2(-2, -1))->second == Tile::Empty);
+        CHECK(m.map.find(Vector2(-2, -1))->second == Tile::Wall);
         CHECK(m.map.find(Vector2(-1, -1))->second == Tile::Target);
         CHECK(m.map.find(Vector2( 0, -1))->second == Tile::Empty);
         CHECK(m.map.find(Vector2( 1, -1))->second == Tile::Wall);
@@ -81,7 +81,7 @@ TEST_CASE("Path Finder")
         // fifth row
         CHECK(m.map.find(Vector2(-3, -2))->second == Tile::Empty);
         CHECK(m.map.find(Vector2(-2, -2))->second == Tile::Empty);
-        CHECK(m.map.find(Vector2(-1, -2))->second == Tile::Empty);
+        CHECK(m.map.find(Vector2(-1, -2))->second == Tile::Wall);
         CHECK(m.map.find(Vector2( 0, -2))->second == Tile::Wall);
         CHECK(m.map.find(Vector2( 1, -2))->second == Tile::Empty);
         CHECK(m.map.find(Vector2( 2, -2))->second == Tile::Empty);
@@ -126,8 +126,35 @@ TEST_CASE("Path Finder")
         CHECK(s.pc() == ResultCode::MissingInput);
         std::stringstream sstr;
         sstr << map;
-        CHECK(sstr.str() == " ## \n"
-                            "#..#\n"
-                            "X.# \n");
+        CHECK(sstr.str() == "  ## \n"
+                            " #O.#\n"
+                            "#X.# \n"
+                            " ##  \n");
+
+        CHECK(find_target(map)->first == Vector2(-1, -1));
+    }
+
+    char const test_map2[] = " ##   \n"
+                             "#.O## \n"
+                             "#.#..#\n"
+                             "#.X.# \n"
+                             " ###  \n";
+
+    SECTION("Flood Fill #2")
+    {
+        {
+            MockProgram const m = MockProgram::fromString(test_map);
+            Scanner s(m);
+
+            auto const map = floodFill(s);
+            CHECK(floodFill2(map) == 3);
+        }
+        {
+            MockProgram const m = MockProgram::fromString(test_map2);
+            Scanner s(m);
+
+            auto const map = floodFill(s);
+            CHECK(floodFill2(map) == 4);
+        }
     }
 }

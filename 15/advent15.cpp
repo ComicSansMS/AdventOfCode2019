@@ -39,13 +39,12 @@ int main(int argc, char* argv[])
     IntegerProgram p = parseInput(*input);
     executeProgram(p);
     Scanner s(p);
-    //std::ofstream fout("out.txt");
-    auto map = floodFill(s);
 
-    auto it_target = std::find_if(map.begin(), map.end(), [](auto const& p) { return p.second.t == Tile::Target; });
+    MazeMap const map = floodFill(s);
+    auto const it_target = find_target(map);
 
     std::cout << "First result is " << it_target->second.path.size() << std::endl;
-    // std::cout << "Second result is " << fuelFromOneTrillion(m) << std::endl;
+    std::cout << "Second result is " << floodFill2(map) << std::endl;
 
     return 0;
 }
