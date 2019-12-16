@@ -113,19 +113,13 @@ Signal calculateTransmission(Signal const& s, int n)
 
 Signal calculateTransmission_10k(Signal const& s, int n)
 {
-    int skip = 0;
-    int pow = 1;
-    for (int i = 0; i < 7; ++i) {
-        skip += (s[6 - i]) * pow;
-        pow *= 10;
-    }
+    int const skip = std::accumulate(s.begin(), s.begin() + 7, 0, [](int acc, int d) { return (acc * 10) + d; });
 
     int const limit = 10'000 * static_cast<int>(s.size());
     assert(skip > limit / 2);
+
     Signal acc(limit - skip);
-    for (int i = skip; i < limit; ++i) {
-        acc[i - skip] = s[i % s.size()];
-    }
+    for (int i = skip; i < limit; ++i) { acc[i - skip] = s[i % s.size()]; }
     for (int i = 0; i < n; ++i) {
         std::partial_sum(acc.rbegin(), acc.rend(), acc.rbegin(), [](int a, int b) { return (a + b) % 10; });
     }
