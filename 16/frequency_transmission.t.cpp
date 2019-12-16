@@ -12,23 +12,22 @@ TEST_CASE("Frequency Transmission")
 
     SECTION("Signal-Pattern Multiplication")
     {
-        CHECK(ranges::to<Signal>(multiplyPattern(Signal{ 4, 9, 9, 8, 7, 6, 5 }, Pattern{ 1, 2, 3 })) ==
+        CHECK(multiplyPattern(Signal{ 4, 9, 9, 8, 7, 6, 5 }, Pattern{ 1, 2, 3 }) ==
               Signal{ 8, 27, 9, 16, 21, 6, 10 });
-        CHECK(ranges::to<Signal>(multiplyPattern(Signal{ 1, 9, 8, 7, 6, 5 }, Pattern{ 2, -5 })) ==
+        CHECK(multiplyPattern(Signal{ 1, 9, 8, 7, 6, 5 }, Pattern{ 2, -5 }) ==
               Signal{ -5, 18, -40, 14, -30, 10 });
     }
 
     SECTION("Pattern Generation")
     {
-        CHECK(ranges::to<Pattern>(generatePattern(1)) == Pattern{ 0, 1, 0, -1 });
-        CHECK(ranges::to<Pattern>(generatePattern(3)) == Pattern{ 0, 0, 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 });
+        CHECK(generatePattern(1) == Pattern{ 0, 1, 0, -1 });
+        CHECK(generatePattern(3) == Pattern{ 0, 0, 0, 1, 1, 1, 0, 0, 0, -1, -1, -1 });
     }
 
     SECTION("Apply Full Phase")
     {
         std::vector<Signal> s;
         s.push_back(Signal{ 1, 2, 3, 4, 5, 6, 7, 8 });
-        for (int i = 0; i < 5; ++i) { s.push_back(applyPhase(s.back())); }
         // Input signal: 12345678
         // 
         CHECK(s[0] == Signal{ 1, 2, 3, 4, 5, 6, 7, 8 });
@@ -43,12 +42,13 @@ TEST_CASE("Frequency Transmission")
         //
         // After 1 phase: 48226158
         //
-        CHECK(ranges::to<Signal>(multiplyPattern(s[0], ranges::to<Pattern>(generatePattern(1)))) ==
+        CHECK(multiplyPattern(s[0], generatePattern(1)) ==
               Signal{ 1, 0, -3, 0, 5, 0, -7, 0 });
-        CHECK(ranges::to<Signal>(multiplyPattern(s[0], ranges::to<Pattern>(generatePattern(2)))) ==
+        CHECK(multiplyPattern(s[0], generatePattern(2)) ==
               Signal{ 0, 2, 3, 0, 0, -6, -7, 0 });
-        CHECK(ranges::to<Signal>(multiplyPattern(s[0], ranges::to<Pattern>(generatePattern(3)))) ==
+        CHECK(multiplyPattern(s[0], generatePattern(3)) ==
               Signal{ 0, 0, 3, 4, 5, 0, 0, 0 });
+        s.push_back(applyPhase(s.back()));
         CHECK(s[1] == Signal{ 4, 8, 2, 2, 6, 1, 5, 8 });
         // 4*1  + 8*0  + 2*-1 + 2*0  + 6*1  + 1*0  + 5*-1 + 8*0  = 3
         // 4*0  + 8*1  + 2*1  + 2*0  + 6*0  + 1*-1 + 5*-1 + 8*0  = 4
@@ -61,6 +61,7 @@ TEST_CASE("Frequency Transmission")
         //
         // After 2 phases: 34040438
         //
+        s.push_back(applyPhase(s.back()));
         CHECK(s[2] == Signal{ 3, 4, 0, 4, 0, 4, 3, 8 });
         // 3*1  + 4*0  + 0*-1 + 4*0  + 0*1  + 4*0  + 3*-1 + 8*0  = 0
         // 3*0  + 4*1  + 0*1  + 4*0  + 0*0  + 4*-1 + 3*-1 + 8*0  = 3
@@ -73,6 +74,7 @@ TEST_CASE("Frequency Transmission")
         //
         // After 3 phases: 03415518
         //
+        s.push_back(applyPhase(s.back()));
         CHECK(s[3] == Signal{ 0, 3, 4, 1, 5, 5, 1, 8 });
         // 0*1  + 3*0  + 4*-1 + 1*0  + 5*1  + 5*0  + 1*-1 + 8*0  = 0
         // 0*0  + 3*1  + 4*1  + 1*0  + 5*0  + 5*-1 + 1*-1 + 8*0  = 1
@@ -85,6 +87,7 @@ TEST_CASE("Frequency Transmission")
         //
         // After 4 phases: 01029498
         //
+        s.push_back(applyPhase(s.back()));
         CHECK(s[4] == Signal{ 0, 1, 0, 2, 9, 4, 9, 8 });
     }
 
@@ -106,6 +109,17 @@ TEST_CASE("Frequency Transmission")
             s.resize(8);
             CHECK(s == parseInput("52432133"));
         }
+    }
 
+    SECTION("Test")
+    {
+        Signal s0 = parseInput("03036732577212944063491565474664");
+        Signal s;
+        s.resize(s0.size() * 10'000);
+        for (int i = 0; i < 10'000; ++i) {
+            s.insert(s.end(), s0.begin(), s0.end());
+        }
+        auto s_2 = calculateTransmission(s, 2);
+        CHECK(s_2.size() == s.size());
     }
 }
