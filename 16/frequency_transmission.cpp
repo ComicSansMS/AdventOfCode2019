@@ -72,36 +72,6 @@ Signal applyPhase(Signal const& s)
     return ret;
 }
 
-Signal applyPhase_10k(Signal const& s, int skip)
-{
-    int const limit = 10'000 * static_cast<int>(s.size());
-    Signal ret(limit - skip);
-    for (int i = skip; i < limit; ++i)
-    {
-        int acc = 0;
-        int const iteration = i + 1;
-        int const span = 4 * iteration;
-        // 1
-        for (int j = iteration - 1; j < limit; j += span) {
-            int const klimit = std::min(limit, j + iteration);
-            for (int k = j; k < klimit; ++k) {
-                acc += s[k % s.size()];
-            }
-        }
-
-        // -1
-        for (int j = 3*iteration - 1; j < limit; j += span) {
-            int const klimit = std::min(limit, j + iteration);
-            for (int k = j; k < klimit; ++k) {
-                acc -= s[k % s.size()];
-            }
-        }
-        ret[i - skip] = std::abs(acc) % 10;
-    }
-    return ret;
-}
-
-
 Signal calculateTransmission(Signal const& s, int n)
 {
     Signal acc = s;
