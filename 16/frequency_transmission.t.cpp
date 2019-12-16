@@ -113,13 +113,20 @@ TEST_CASE("Frequency Transmission")
 
     SECTION("Test")
     {
-        Signal s0 = parseInput("03036732577212944063491565474664");
-        Signal s;
-        s.resize(s0.size() * 10'000);
-        for (int i = 0; i < 10'000; ++i) {
-            s.insert(s.end(), s0.begin(), s0.end());
+        {
+            Signal s = calculateTransmission_10k(parseInput("03036732577212944063491565474664"), 100);
+            s.resize(8);
+            CHECK(s == parseInput("84462026"));
         }
-        auto s_2 = calculateTransmission(s, 2);
-        CHECK(s_2.size() == s.size());
+        {
+            Signal s = calculateTransmission_10k(parseInput("02935109699940807407585447034323"), 100);
+            s.resize(8);
+            CHECK(s == parseInput("78725270"));
+        }
+        {
+            Signal s = calculateTransmission_10k(parseInput("03081770884921959731165446850517"), 100);
+            s.resize(8);
+            CHECK(s == parseInput("53553731"));
+        }
     }
 }

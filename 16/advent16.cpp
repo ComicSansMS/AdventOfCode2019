@@ -40,9 +40,14 @@ int main(int argc, char* argv[])
     auto s_100 = calculateTransmission(s, 100);
 
     std::cout << "First result is ";
-    for (int i = 0; i<8; ++i) { std::cout << s_100[i]; }
+    for (int i = 0; i < 8; ++i) { std::cout << s_100[i]; }
     std::cout << std::endl;
-    //std::cout << "Second result is " << floodFill2(map) << std::endl;
+
+    auto s10k_100 = calculateTransmission_10k(s, 100);
+
+    std::cout << "Second result is ";
+    for (int i = 0; i < 8; ++i) { std::cout << s10k_100[i]; }
+    std::cout << std::endl;
 
     return 0;
 }

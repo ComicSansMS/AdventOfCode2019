@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <numeric>
 #include <string>
 
 #include <iostream>
@@ -44,30 +45,18 @@ Signal parseInput(std::string_view input)
 
 Signal applyPhase(Signal const& s)
 {
-    /*
-    Signal ret(s.size());
-    for (int i = 0; i<static_cast<int>(s.size()); ++i)
-    {
-        auto pattern = ranges::to<std::vector>(generatePattern(i + 1));
-        ret[i] = std::abs(ranges::accumulate(multiplyPattern(s, pattern), 0)) % 10;
-    }
-    return ret;
-    */
-    //std::cout << "\n\n";
     Signal ret(s.size());
     int const limit = static_cast<int>(s.size());
     for (int i = 0; i < limit; ++i)
     {
         int acc = 0;
         int const iteration = i + 1;
-        //std::cout << "Iteration #" << iteration << "\n";
         int const span = 4 * iteration;
         // 1
         for (int j = iteration - 1; j < limit; j += span) {
             int const klimit = std::min(limit, j + iteration);
             for (int k = j; k < klimit; ++k) {
                 acc += s[k];
-                //std::cout << "+ " << k << "\t\t" << s[k] << "\n";
             }
         }
 
@@ -76,20 +65,71 @@ Signal applyPhase(Signal const& s)
             int const klimit = std::min(limit, j + iteration);
             for (int k = j; k < klimit; ++k) {
                 acc -= s[k];
-                //std::cout << "- " << k << "\t\t" << s[k] << "\n";
             }
         }
-        // std::cout << "acc: " << acc << "\n";
         ret[i] = std::abs(acc) % 10;
     }
     return ret;
 }
+
+Signal applyPhase_10k(Signal const& s, int skip)
+{
+    int const limit = 10'000 * static_cast<int>(s.size());
+    Signal ret(limit - skip);
+    for (int i = skip; i < limit; ++i)
+    {
+        int acc = 0;
+        int const iteration = i + 1;
+        int const span = 4 * iteration;
+        // 1
+        for (int j = iteration - 1; j < limit; j += span) {
+            int const klimit = std::min(limit, j + iteration);
+            for (int k = j; k < klimit; ++k) {
+                acc += s[k % s.size()];
+            }
+        }
+
+        // -1
+        for (int j = 3*iteration - 1; j < limit; j += span) {
+            int const klimit = std::min(limit, j + iteration);
+            for (int k = j; k < klimit; ++k) {
+                acc -= s[k % s.size()];
+            }
+        }
+        ret[i - skip] = std::abs(acc) % 10;
+    }
+    return ret;
+}
+
 
 Signal calculateTransmission(Signal const& s, int n)
 {
     Signal acc = s;
     for (int i = 0; i < n; ++i) {
         acc = applyPhase(acc);
+    }
+    return acc;
+}
+
+Signal calculateTransmission_10k(Signal const& s, int n)
+{
+    int skip = 0;
+    int pow = 1;
+    for (int i = 0; i < 7; ++i) {
+        skip += (s[6 - i]) * pow;
+        pow *= 10;
+    }
+
+    int const limit = 10'000 * static_cast<int>(s.size());
+    Signal acc(limit - skip);
+    for (int i = skip; i < limit; ++i) {
+        acc[i - skip] = s[i % s.size()];
+    }
+    for (int i = 0; i < n; ++i) {
+        for (int j = static_cast<int>(acc.size()) - 2; j >= 0; --j) {
+            acc[j] += acc[j + 1];
+            acc[j] = acc[j] % 10;
+        }
     }
     return acc;
 }

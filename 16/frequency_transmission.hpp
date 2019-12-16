@@ -20,4 +20,8 @@ Signal applyPhase(Signal const& s);
 
 Signal calculateTransmission(Signal const& s, int n);
 
+Signal applyPhase_10k(Signal const& s, int skip);
+
+Signal calculateTransmission_10k(Signal const& s, int n);
+
 #endif
