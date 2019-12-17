@@ -2,18 +2,7 @@
 
 #include <catch.hpp>
 
-#include <fstream>
 #include <sstream>
-
-std::string readInput()
-{
-    std::ifstream fin("input");
-    REQUIRE(fin);
-    std::stringstream sstr;
-    sstr << fin.rdbuf();
-    REQUIRE(fin);
-    return sstr.str();
-}
 
 TEST_CASE("Path Finder")
 {
@@ -31,8 +20,6 @@ TEST_CASE("Path Finder")
         sstr << Vector2(5, -12);
         CHECK(sstr.str() == "[5,-12]");
     }
-
-    IntegerProgram p = parseInput(readInput());
 
     char const test_map[] = "      \n"
                             "   ## \n"
