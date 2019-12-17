@@ -112,7 +112,7 @@ struct IntcodeProgramModel : Intcode::Concept {
         : p(program)
     {}
     ~IntcodeProgramModel() override = default;
-    std::unique_ptr<Concept> clone() {
+    std::unique_ptr<Concept> clone() override {
         return std::make_unique<IntcodeProgramModel<IntcodeProgram_T>>(p);
     }
     ResultCode::ResultCodes execute() override {
